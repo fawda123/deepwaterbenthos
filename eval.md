@@ -1,6 +1,6 @@
 
 ```r
-knitr::opts_chunk$set(message = F, warning = F)
+knitr::opts_chunk$set(message = F, warning = F, dev = 'tiff', dev.args = list(tiff = list(compression = 'lzw', family = 'serif')), dpi = 400, out.width = '60%')
 
 library(tidyverse)
 library(vegan)
@@ -12,6 +12,8 @@ library(tibble)
 library(d3heatmap)
 library(NbClust)
 library(ggord)
+library(RColorBrewer)
+library(gridExtra)
 source('R/funcs.R')
 
 data(biogen)
@@ -48,7 +50,7 @@ ggplot(toplo, aes(x = Var1, y = Freq)) +
   geom_hline(yintercept = ln)
 ```
 
-![](eval_files/figure-html/explore-1.png)<!-- -->
+<img src="eval_files/figure-html/explore-1.tiff" width="60%" />
 
 
 ```r
@@ -62,7 +64,7 @@ toplo <- biogen %>%
 ggpairs(toplo)
 ```
 
-![](eval_files/figure-html/pairs-1.png)<!-- -->
+<img src="eval_files/figure-html/pairs-1.tiff" width="60%" />
 
 ## Clustering and ordination
 
@@ -97,7 +99,7 @@ p1 <- dend %>%
 circlize_dendrogram(p1) 
 ```
 
-![](eval_files/figure-html/dendro-1.png)<!-- -->
+<img src="eval_files/figure-html/dendro-1.tiff" width="60%" />
 
 
 ```r
@@ -124,7 +126,7 @@ ord
 ## Distance: bray 
 ## 
 ## Dimensions: 3 
-## Stress:     0.1935342 
+## Stress:     0.1935309 
 ## Stress type 1, weak ties
 ## Two convergent solutions found after 20 tries
 ## Scaling: centring, PC rotation, halfchange scaling 
@@ -133,28 +135,22 @@ ord
 
 ```r
 ggord(ord, grp_in = as.character(grps), axes = c("1", "2"), arrow = NULL, txt = NULL, size = 4, 
-      obslab = F, ellipse = F, hull = T, alpha = 0.8, cols = cols)
+      obslab = F, alpha = 0.8, cols = cols)
 ```
 
-![](eval_files/figure-html/nms-1.png)<!-- -->
+<img src="eval_files/figure-html/nms-1.tiff" width="50%" />
 
 ```r
-ggord(ord, grp_in = as.character(grps), axes = c("2", "3"), arrow = NULL, txt = NULL, size = 4, 
-      obslab = F, ellipse = F, hull = T, alpha = 0.8, cols = cols)
+# ggord(ord, grp_in = as.character(grps), axes = c("2", "3"), arrow = NULL, txt = NULL, size = 4, 
+#       obslab = F, alpha = 0.8, cols = cols)
+# 
+# ggord(ord, grp_in = as.character(grps), axes = c("1", "3"), arrow = NULL, txt = NULL, size = 4, 
+#       obslab = F, alpha = 0.8, cols = cols)
 ```
-
-![](eval_files/figure-html/nms-2.png)<!-- -->
-
-```r
-ggord(ord, grp_in = as.character(grps), axes = c("1", "3"), arrow = NULL, txt = NULL, size = 4, 
-      obslab = F, ellipse = F, hull = T, alpha = 0.8, cols = cols)
-```
-
-![](eval_files/figure-html/nms-3.png)<!-- -->
 
 
 ```r
-bbx <- make_bbox(lon = env$Longitude, lat = env$Latitude, f = 0.2)
+bbx <- make_bbox(lon = env$Longitude, lat = env$Latitude, f = 0.1)
 bsmap <- get_stamenmap(bbx, maptype = "toner-lite", zoom = 8)
 
 envloc <- env %>% 
@@ -164,16 +160,23 @@ toplo <- grps %>%
   data.frame(ngrps = .) %>% 
   rownames_to_column('SampleID') %>% 
   left_join(biogen[, c('SampleID', 'StationID')], ., by = 'SampleID') %>% 
-  left_join(envloc, by = 'StationID')
+  left_join(envloc, by = 'StationID') %>% 
+  mutate(
+    Groups = factor(ngrps)
+  )
 
 ggmap(bsmap) +   
-  geom_point(data = toplo, aes(x = Longitude, y = Latitude, colour = factor(ngrps)), 
+  geom_point(data = toplo, aes(x = Longitude, y = Latitude, colour = Groups), 
              alpha = 0.6, size = 2) + 
   scale_colour_manual(values = cols) +
-  theme_bw()
+  theme_bw() +
+  theme(
+    axis.title.x = element_blank(), 
+    axis.title.y = element_blank()
+  )
 ```
 
-![](eval_files/figure-html/spatial-1.png)<!-- -->
+<img src="eval_files/figure-html/spatial-1.tiff" width="60%" />
 
 
 ```r
@@ -209,21 +212,101 @@ datenv <- env[, c('SampleID', evvrs)] %>%
 ord <- cca(datbio, datenv)
 
 ggord(ord, grp_in = as.character(grps), axes = c('1', '2'), vec_ext = 3, ptslab = T, 
-      parse = T, hull = T, ellipse = F, cols = cols)
+      parse = T, cols = cols)
 ```
 
-![](eval_files/figure-html/cca-1.png)<!-- -->
+<img src="eval_files/figure-html/cca-1.tiff" width="60%" />
 
 ```r
-ggord(ord, grp_in = as.character(grps), axes = c('2', '3'), vec_ext = 3, ptslab = T, 
-      parse = T, hull = T, ellipse = F, cols = cols)
+# ggord(ord, grp_in = as.character(grps), axes = c('2', '3'), vec_ext = 3, ptslab = T, 
+#       parse = T, cols = cols)
+# ggord(ord, grp_in = as.character(grps), axes = c('1', '3'), vec_ext = 3, ptslab = T, 
+#       parse = T, cols = cols)
 ```
 
-![](eval_files/figure-html/cca-2.png)<!-- -->
+## Genera abundance by group
+
 
 ```r
-ggord(ord, grp_in = as.character(grps), axes = c('1', '3'), vec_ext = 3, ptslab = T, 
-      parse = T, hull = T, ellipse = F, cols = cols)
+# group data as data frame
+grpdat <- grps %>% 
+  data.frame(grps = .) %>% 
+  rownames_to_column('SampleID')
+
+# colors
+colfun <- RColorBrewer::brewer.pal(9, 'Blues') %>% 
+  colorRampPalette
+
+# most abundant species, all sites
+toplo1 <- biogen %>% 
+  left_join(grpdat, by = 'SampleID') %>% 
+  dplyr::select(grps, nm, Abun) %>% 
+  group_by(grps, nm) %>% 
+  summarise(Abun = sum(Abun)) %>% 
+  group_by(grps) %>% 
+  nest %>% 
+  mutate(
+    subdat = map(data, function(x){
+      
+    arrange(x, -Abun) %>% 
+        .[1:10, ]
+      
+    })
+  ) %>% 
+  dplyr::select(-data) %>% 
+  unnest %>% 
+  ungroup %>% 
+  mutate(
+    cols = colfun(length(Abun))[rank(Abun)]
+  ) %>% 
+  split(., .[, c('grps')])
+
+for(i in seq_along(names(toplo1))){
+  
+  tmp <- toplo1[[i]] %>% 
+    arrange(Abun) %>% 
+    mutate(nm = factor(nm, levels = nm))
+  
+  p <- ggplot(tmp, aes(x = nm, y = Abun, fill = Abun)) + 
+    geom_bar(stat = 'identity', colour = 'black', fill = tmp$cols) + 
+    ylab('Abundance') + 
+    facet_wrap( ~ grps, ncol = 2, scales = 'free') + 
+    theme_bw() + 
+    scale_fill_gradientn(colours = brewer.pal(9, 'Blues')) +
+    theme(legend.position = "none", 
+      axis.title.y = element_blank(),
+      axis.text.y = element_text(size = 8), 
+      axis.title.x = element_blank()
+      ) + 
+    # scale_y_continuous(expand = c(0, 0)) +
+    coord_flip()
+  
+  assign(paste0('p', i), p) 
+  
+}
+
+# Get the widths
+pA <- ggplot_gtable(ggplot_build(p1))
+pB <- ggplot_gtable(ggplot_build(p2))
+pC <- ggplot_gtable(ggplot_build(p3))
+maxWidth = grid::unit.pmax(pA$widths[2:3], pB$widths[2:3], pC$widths[2:3])
+
+# Set the widths
+pA$widths[2:3] <- maxWidth
+pB$widths[2:3] <- maxWidth
+pC$widths[2:3] <- maxWidth
+
+grid.arrange(pA, pB, pC, ncol = 1, bottom = 'Abundance')
 ```
 
-![](eval_files/figure-html/cca-3.png)<!-- -->
+<img src="eval_files/figure-html/abund-1.tiff" width="60%" />
+
+### Environmental variables by group
+
+
+```r
+# group data as data frame
+grpdat <- grps %>% 
+  data.frame(grps = .) %>% 
+  rownames_to_column('SampleID')
+```
