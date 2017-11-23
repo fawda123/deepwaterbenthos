@@ -28,6 +28,22 @@ biogen <- read.csv('ignore/Clean benthos v3 - Genus2.csv', stringsAsFactors = FA
   summarise(Abun = round(mean(G_Abun), 0)) %>% 
   ungroup
 
+# genus level data, all sites
+biogenall <- read.csv('ignore/All Benthos - genus2.csv', stringsAsFactors = FALSE) %>% 
+  filter(Month %in% c(7, 8, 9)) %>% 
+  unite('SampleID', StationID, Year, sep = '_', remove = F) %>% 
+  group_by(SampleID) %>% 
+  mutate(n = length(Genus)) %>% 
+  ungroup %>% 
+  filter(n > 5) %>% 
+  rename(
+    nm = Genus
+  ) %>% 
+  select(SampleID, StationID, Year, nm, G_Abun) %>% 
+  group_by(SampleID, StationID, Year, nm) %>%
+  summarise(Abun = round(mean(G_Abun), 0)) %>% 
+  ungroup
+
 # family level data
 biofam <- read.csv('ignore/Clean benthos v3 - family2.csv', stringsAsFactors = FALSE) %>% 
   filter(Month %in% c(7, 8, 9)) %>% 
@@ -48,9 +64,17 @@ env <- read.csv('ignore/clean stations v2 gradients.csv', stringsAsFactors = FAL
   mutate(Longitude = -1 * abs(Longitude)) %>% 
   unite('SampleID', StationID, Year, sep = '_', remove = F)
 
+# all environmental data
+envall <- read.csv('ignore/all samples enviro data.csv', stringsAsFactors = FALSE) %>% 
+  select(StationID, Year, Latitude, Longitude, StationWaterDepth, Clay, Sand, Silt, TN, TOC) %>% 
+  mutate(Longitude = -1 * abs(Longitude)) %>% 
+  unite('SampleID', StationID, Year, sep = '_', remove = F)
+
 # save all
 save(biospp, file = 'data/biospp.RData')
 save(biogen, file = 'data/biogen.RData')
+save(biogenall, file = 'data/biogenall.RData')
 save(biofam, file = 'data/biofam.RData')
 save(env, file = 'data/env.RData')
+save(envall, file = 'data/envall.RData')
 

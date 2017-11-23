@@ -1,6 +1,6 @@
 
 ```r
-knitr::opts_chunk$set(message = F, warning = F, dev = 'tiff', dev.args = list(tiff = list(compression = 'lzw', family = 'serif')), dpi = 400, out.width = '60%')
+knitr::opts_chunk$set(message = F, warning = F, dev = 'png', dev.args = list(tiff = list(family = 'serif')), dpi = 400, out.width = '60%')
 
 library(tidyverse)
 library(vegan)
@@ -18,6 +18,7 @@ library(ggtern)
 source('R/funcs.R')
 
 data(biogen)
+data(biogenall)
 data(env)
 
 # globals
@@ -51,7 +52,7 @@ ggplot(toplo, aes(x = Var1, y = Freq)) +
   geom_hline(yintercept = ln)
 ```
 
-<img src="eval_files/figure-html/explore-1.tiff" width="60%" />
+<img src="eval_files/figure-html/explore-1.png" width="60%" />
 
 
 ```r
@@ -65,7 +66,7 @@ toplo <- biogen %>%
 ggpairs(toplo)
 ```
 
-<img src="eval_files/figure-html/pairs-1.tiff" width="60%" />
+<img src="eval_files/figure-html/pairs-1.png" width="60%" />
 
 ## Clustering and ordination
 
@@ -100,7 +101,7 @@ p1 <- dend %>%
 circlize_dendrogram(p1) 
 ```
 
-<img src="eval_files/figure-html/dendro-1.tiff" width="60%" />
+<img src="eval_files/figure-html/dendro-1.png" width="60%" />
 
 
 ```r
@@ -127,7 +128,7 @@ ord
 ## Distance: bray 
 ## 
 ## Dimensions: 3 
-## Stress:     0.1935315 
+## Stress:     0.1935321 
 ## Stress type 1, weak ties
 ## Two convergent solutions found after 20 tries
 ## Scaling: centring, PC rotation, halfchange scaling 
@@ -139,7 +140,7 @@ ggord(ord, grp_in = as.character(grps), axes = c("1", "2"), arrow = NULL, txt = 
       obslab = F, alpha = 0.8, cols = cols)
 ```
 
-<img src="eval_files/figure-html/nms-1.tiff" width="50%" />
+<img src="eval_files/figure-html/nms-1.png" width="50%" />
 
 ```r
 # ggord(ord, grp_in = as.character(grps), axes = c("2", "3"), arrow = NULL, txt = NULL, size = 4, 
@@ -177,7 +178,7 @@ ggmap(bsmap) +
   )
 ```
 
-<img src="eval_files/figure-html/spatial-1.tiff" width="60%" />
+<img src="eval_files/figure-html/spatial-1.png" width="60%" />
 
 
 ```r
@@ -216,7 +217,7 @@ ggord(ord, grp_in = as.character(grps), axes = c('1', '2'), vec_ext = 3, ptslab 
       parse = T, cols = cols)
 ```
 
-<img src="eval_files/figure-html/cca-1.tiff" width="60%" />
+<img src="eval_files/figure-html/cca-1.png" width="60%" />
 
 ```r
 # ggord(ord, grp_in = as.character(grps), axes = c('2', '3'), vec_ext = 3, ptslab = T, 
@@ -300,7 +301,7 @@ pC$widths[2:3] <- maxWidth
 grid.arrange(pA, pB, pC, ncol = 1, bottom = 'Abundance')
 ```
 
-<img src="eval_files/figure-html/abund-1.tiff" width="60%" />
+<img src="eval_files/figure-html/abund-1.png" width="60%" />
 
 ### Environmental variables by group
 
@@ -336,7 +337,7 @@ ggplot(toplo, aes(x = Group, y = medvl)) +
   )
 ```
 
-<img src="eval_files/figure-html/envgrp-1.tiff" width="50%" />
+<img src="eval_files/figure-html/envgrp-1.png" width="50%" />
 
 
 ```r
@@ -359,4 +360,4 @@ ggtern(toplo, aes(Clay, Silt, Sand, colour = Group)) +
   scale_colour_manual(values = cols)
 ```
 
-<img src="eval_files/figure-html/ternary-1.tiff" width="50%" />
+<img src="eval_files/figure-html/ternary-1.png" width="50%" />

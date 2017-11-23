@@ -7,7 +7,7 @@ toc: no
 self_contained: no
 ---
 ```{r message = F, warning = F}
-knitr::opts_chunk$set(message = F, warning = F, dev = 'tiff', dev.args = list(tiff = list(compression = 'lzw', family = 'serif')), dpi = 400, out.width = '60%')
+knitr::opts_chunk$set(message = F, warning = F, dev = 'png', dev.args = list(tiff = list(family = 'serif')), dpi = 400, out.width = '60%')
 
 library(tidyverse)
 library(vegan)
@@ -25,6 +25,7 @@ library(ggtern)
 source('R/funcs.R')
 
 data(biogen)
+data(biogenall)
 data(env)
 
 # globals
@@ -297,7 +298,6 @@ ggplot(toplo, aes(x = Group, y = medvl)) +
   theme(
     strip.background = element_blank()
   )
-
 ```
 
 ```{r ternary, fig.height = 5, fig.width = 5, out.width = '50%'}
