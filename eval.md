@@ -14,6 +14,7 @@ library(NbClust)
 library(ggord)
 library(RColorBrewer)
 library(gridExtra)
+library(ggtern)
 source('R/funcs.R')
 
 data(biogen)
@@ -126,7 +127,7 @@ ord
 ## Distance: bray 
 ## 
 ## Dimensions: 3 
-## Stress:     0.1935309 
+## Stress:     0.1935315 
 ## Stress type 1, weak ties
 ## Two convergent solutions found after 20 tries
 ## Scaling: centring, PC rotation, halfchange scaling 
@@ -309,4 +310,53 @@ grid.arrange(pA, pB, pC, ncol = 1, bottom = 'Abundance')
 grpdat <- grps %>% 
   data.frame(grps = .) %>% 
   rownames_to_column('SampleID')
+
+toplo <- env %>%
+  left_join(grpdat, by = 'SampleID') %>% 
+  filter(!is.na(grps)) %>% 
+  .[, c('grps', 'StationWaterDepth', 'Latitude', 'TN', 'TOC')] %>% 
+  gather('var', 'val', -grps) %>% 
+  mutate(grps = factor(grps)) %>% 
+  rename(Group = grps) %>% 
+  group_by(Group, var) %>% 
+  summarise(
+    medvl = median(val, na.rm = T),
+    medlo = quantile(val, 0.05, na.rm = T),
+    medhi = quantile(val, 0.95, na.rm = T)
+  )
+
+ggplot(toplo, aes(x = Group, y = medvl)) + 
+  geom_bar(stat = 'identity') +
+  geom_errorbar(aes(ymin = medlo, ymax = medhi)) + 
+  facet_wrap(~ var, scales = 'free_y', ncol = 2) + 
+  scale_y_continuous('Median (5th/95th)') + 
+  theme_bw() + 
+  theme(
+    strip.background = element_blank()
+  )
 ```
+
+<img src="eval_files/figure-html/envgrp-1.tiff" width="50%" />
+
+
+```r
+# group data as data frame
+grpdat <- grps %>% 
+  data.frame(grps = .) %>% 
+  rownames_to_column('SampleID')
+
+toplo <- env %>%
+  left_join(grpdat, by = 'SampleID') %>% 
+  filter(!is.na(grps)) %>% 
+  .[, c('grps', 'Clay', 'Silt', 'Sand')] %>% 
+  mutate(grps = factor(grps)) %>% 
+  rename(Group = grps) %>% 
+  na.omit
+
+ggtern(toplo, aes(Clay, Silt, Sand, colour = Group)) + 
+  geom_point(size = 3, alpha = 0.7) + 
+  theme_rgbw() + 
+  scale_colour_manual(values = cols)
+```
+
+<img src="eval_files/figure-html/ternary-1.tiff" width="50%" />
